@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime, os
+from zoneinfo import ZoneInfo
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./quickdine.db")
 
@@ -22,8 +23,10 @@ class Restaurant(Base):
     password_hash = Column(String, nullable=False)
     phone         = Column(String, default="")
     logo_url      = Column(String, default="")
-    created_at    = Column(DateTime, default=datetime.datetime.utcnow)
-
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(ZoneInfo("Asia/Kolkata"))
+)
 
 class MenuItem(Base):
     __tablename__ = "menu_items"
@@ -35,7 +38,10 @@ class MenuItem(Base):
     category      = Column(String, default="General")
     price         = Column(Float, nullable=False)
     is_available  = Column(Boolean, default=True)
-    created_at    = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(ZoneInfo("Asia/Kolkata"))
+)
 
 
 class Order(Base):
@@ -47,7 +53,10 @@ class Order(Base):
     ordered_items = Column(JSON, nullable=False)   # list of {id, name, price, qty}
     total_amount  = Column(Float, nullable=False)
     status        = Column(String, default="Pending")  # Pending/Preparing/Ready/Served
-    timestamp     = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(
+    DateTime,
+    default=lambda: datetime.datetime.now(ZoneInfo("Asia/Kolkata"))
+)
 
 
 def get_db():
