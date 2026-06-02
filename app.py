@@ -8,6 +8,7 @@ from models import init_db, get_db, Restaurant, MenuItem, Order
 from routers.api import router
 from ws_manager import manager
 from auth import get_current_manager
+from fastapi import Request
 
 import qrcode
 import io, base64
@@ -71,9 +72,8 @@ async def customer_menu(request: Request, restaurant_id: str):
 # ── QR code generation endpoint ──────────────────────────────────────────────
 
 @app.get("/api/qr/generate/{restaurant_id}")
-def generate_qr(restaurant_id: str):
-    """Returns a PNG QR code for the restaurant menu URL."""
-    base_url = os.getenv("BASE_URL", "http://localhost:8000")
+def generate_qr(request: Request, restaurant_id: str):
+    base_url = str(request.base_url).rstrip("/")
     url = f"{base_url}/menu/{restaurant_id}"
     qr = qrcode.QRCode(
         version=1,
