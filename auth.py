@@ -15,13 +15,12 @@ pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer  = HTTPBearer(auto_error=False)
 
 
-def hash_password(pw: str) -> str:
-    return pwd_ctx.hash(pw)
+def hash_password(pw):
+    return pwd_ctx.hash(pw[:72])
 
 
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_ctx.verify(plain, hashed)
-
+def verify_password(pw, hashed):
+    return pwd_ctx.verify(pw[:72], hashed)
 
 def create_token(data: dict) -> str:
     payload = data.copy()
