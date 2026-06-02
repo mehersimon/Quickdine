@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – QuickDine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub" id="greeting">Good day, Manager</p>
+      </div>
+      <label class="btn btn-ghost" for="logo-upload">Upload Logo</label>
+      <input type="file" id="logo-upload" accept="image/*" style="display:none" onchange="uploadLogo(this)">
+    </div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-value" id="stat-orders">—</div>
+        <div class="stat-label">Orders Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value" id="stat-pending">—</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="stat-revenue">—</div>
+        <div class="stat-label">Revenue Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🍽️</div>
+        <div class="stat-value" id="stat-items">—</div>
+        <div class="stat-label">Menu Items</div>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a href="/dashboard/menu" class="quick-card">
+        <span class="qc-icon">📋</span>
+        <span class="qc-label">Manage Menu</span>
+        <span class="qc-arrow">→</span>
+      </a>
+      <a href="/dashboard/orders" class="quick-card">
+        <span class="qc-icon">🔔</span>
+        <span class="qc-label">Live Orders</span>
+        <span class="qc-arrow">→</span>
+      </a>
+      <a href="/dashboard/qr" class="quick-card">
+        <span class="qc-icon">📱</span>
+        <span class="qc-label">QR Code</span>
+        <span class="qc-arrow">→</span>
+      </a>
+    </div>
+  </main>
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+  <script>
+    requireAuth();
+    loadStats();
+    loadGreeting();
+
+    function loadGreeting() {
+      const name = localStorage.getItem('qd_name') || 'Manager';
+      const h = new Date().getHours();
+      const gr = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('greeting').textContent = `${gr}, ${name} 👋`;
+    }
+
+    async function loadStats() {
+      const data = await api('/api/dashboard/stats');
+      document.getElementById('stat-orders').textContent = data.orders_today;
+      document.getElementById('stat-pending').textContent = data.pending;
+      document.getElementById('stat-revenue').textContent = '₹' + data.revenue.toFixed(2);
+      document.getElementById('stat-items').textContent = data.total_items;
+    }
+
+    async function uploadLogo(input) {
+      const file = input.files[0]; if(!file) return;
+      const fd = new FormData(); fd.append('file', file);
+      const res = await fetch('/api/restaurant/logo', {
+        method:'POST', headers:{'Authorization':'Bearer '+getToken()}, body:fd
+      });
+      const d = await res.json();
+      if(res.ok) { alert('Logo updated!'); }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickDine – QR Restaurant Ordering</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <style>
+    .hero { min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:2rem; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(255,170,50,.18) 0%, transparent 70%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(255,80,100,.12) 0%, transparent 60%); pointer-events:none; }
+    .brand { font-family:'Syne',sans-serif; font-size:clamp(3rem,10vw,6rem); font-weight:800; letter-spacing:-2px; background:linear-gradient(135deg, #ffaa32 0%, #ff5064 60%, #a855f7 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:.25rem; }
+    .tagline { font-size:clamp(1rem,3vw,1.4rem); color:var(--muted); font-weight:300; max-width:520px; line-height:1.6; margin-bottom:3rem; }
+    .cta-group { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+    .pill { display:inline-flex; align-items:center; gap:.5rem; background:var(--glass); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:.5rem 1.25rem; font-size:.85rem; color:var(--muted); margin-bottom:3rem; }
+    .features { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.5rem; max-width:900px; width:100%; margin-top:4rem; }
+    .feature-card { background:var(--glass); border:1px solid rgba(255,255,255,.08); border-radius:1.5rem; padding:1.75rem; text-align:left; backdrop-filter:blur(8px); }
+    .feature-icon { font-size:2rem; margin-bottom:1rem; }
+    .feature-card h3 { font-family:'Syne',sans-serif; font-size:1.1rem; color:var(--text); margin-bottom:.5rem; }
+    .feature-card p { font-size:.9rem; color:var(--muted); line-height:1.6; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="nav-brand">Quick<span style="color:#ffaa32">Dine</span></span>
+    <div class="nav-links">
+      <a href="/login">Login</a>
+      <a href="/register" class="btn btn-primary">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="pill">✦ No app download required for customers</div>
+    <h1 class="brand">QuickDine</h1>
+    <p class="tagline">The modern QR ordering platform that puts your menu in every customer's hand instantly.</p>
+    <div class="cta-group">
+      <a href="/register" class="btn btn-primary btn-lg">Start Free →</a>
+      <a href="/login" class="btn btn-ghost btn-lg">Sign in</a>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Real-Time Kitchen</h3>
+        <p>Orders appear instantly on your kitchen dashboard via WebSockets — zero page refresh.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Mobile-First Menu</h3>
+        <p>Customers scan, browse, and order from a beautiful phone-optimized page.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🍽️</div>
+        <h3>Permanent QR Code</h3>
+        <p>One QR code per restaurant. Update your menu anytime — the code never changes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure & Multi-Restaurant</h3>
+        <p>JWT auth, hashed passwords, and full isolation between restaurants.</p>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

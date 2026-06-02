@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register – QuickDine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+  <div class="auth-bg">
+    <div class="auth-card" style="max-width:520px">
+      <a href="/" class="nav-brand" style="margin-bottom:2rem;display:block">Quick<span style="color:#ffaa32">Dine</span></a>
+      <h2 class="auth-title">Create your restaurant</h2>
+      <p class="auth-sub">Get a menu page + QR code in seconds</p>
+      <div id="error-msg" class="error-box" style="display:none"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Restaurant Name</label>
+          <input type="text" id="restaurant_name" placeholder="The Spice Garden">
+        </div>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="owner_name" placeholder="John Doe">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="owner@restaurant.com">
+      </div>
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="tel" id="phone" placeholder="+91 98765 43210">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Min 6 characters">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="password2" placeholder="Repeat password">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="reg-btn" onclick="doRegister()">Create Account →</button>
+      <p class="auth-footer">Already registered? <a href="/login">Sign in</a></p>
+    </div>
+  </div>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    async function doRegister() {
+      const btn = document.getElementById('reg-btn');
+      const err = document.getElementById('error-msg');
+      err.style.display = 'none';
+      if (v('password') !== v('password2')) {
+        err.textContent = 'Passwords do not match'; err.style.display='block'; return;
+      }
+      if (v('password').length < 6) {
+        err.textContent = 'Password must be at least 6 characters'; err.style.display='block'; return;
+      }
+      btn.textContent = 'Creating…'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/register', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            restaurant_name: v('restaurant_name'),
+            owner_name: v('owner_name'),
+            email: v('email'),
+            phone: v('phone'),
+            password: v('password'),
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Registration failed');
+        localStorage.setItem('qd_token', data.token);
+        localStorage.setItem('qd_rid', data.restaurant_id);
+        localStorage.setItem('qd_name', data.restaurant_name);
+        window.location.href = '/dashboard';
+      } catch(e) {
+        err.textContent = e.message; err.style.display='block';
+        btn.textContent = 'Create Account →'; btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

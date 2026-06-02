@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Orders – QuickDine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <link rel="stylesheet" href="/static/css/orders.css">
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Live Orders</h1>
+        <p class="page-sub">Real-time kitchen feed • <span id="ws-status" class="ws-dot">Connecting…</span></p>
+      </div>
+      <button class="btn btn-ghost" onclick="loadOrders()">↺ Refresh</button>
+    </div>
+
+    <div class="orders-columns">
+      <div class="order-col" id="col-Pending">
+        <div class="col-header pending-h">⏳ Pending</div>
+        <div class="col-body" id="body-Pending"></div>
+      </div>
+      <div class="order-col" id="col-Preparing">
+        <div class="col-header preparing-h">🔥 Preparing</div>
+        <div class="col-body" id="body-Preparing"></div>
+      </div>
+      <div class="order-col" id="col-Ready">
+        <div class="col-header ready-h">✅ Ready</div>
+        <div class="col-body" id="body-Ready"></div>
+      </div>
+      <div class="order-col" id="col-Served">
+        <div class="col-header served-h">🎉 Served</div>
+        <div class="col-body" id="body-Served"></div>
+      </div>
+    </div>
+  </main>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+  <script src="/static/js/orders.js"></script>
+  <script>
+    requireAuth();
+    initOrders();
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+/* Auth pages */
+.auth-bg {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(255,170,50,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 70%, rgba(255,80,100,.08) 0%, transparent 55%);
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.75rem;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.5);
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  margin-bottom: .25rem;
+}
+
+.auth-sub {
+  font-size: .9rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.auth-footer {
+  text-align: center;
+  font-size: .875rem;
+  color: var(--muted);
+  margin-top: 1.5rem;
+}
+
+.auth-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}

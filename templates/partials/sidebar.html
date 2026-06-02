@@ -1,0 +1,29 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">Quick<span>Dine</span></div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+      <span class="nav-icon">⊞</span> Overview
+    </a>
+    <a href="/dashboard/menu" class="nav-item {% if '/menu' in request.url.path %}active{% endif %}">
+      <span class="nav-icon">📋</span> Menu
+    </a>
+    <a href="/dashboard/orders" class="nav-item {% if '/orders' in request.url.path %}active{% endif %}">
+      <span class="nav-icon">🔔</span> Orders
+    </a>
+    <a href="/dashboard/qr" class="nav-item {% if '/qr' in request.url.path %}active{% endif %}">
+      <span class="nav-icon">📱</span> QR Code
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="avatar">M</div>
+      <div class="user-info">
+        <div class="user-name" id="sb-name">Loading…</div>
+        <div class="user-role">Manager</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</aside>
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+<button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>

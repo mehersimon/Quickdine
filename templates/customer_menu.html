@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu – QuickDine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/customer.css">
+</head>
+<body>
+  <!-- Restaurant Header -->
+  <header class="resto-header">
+    <div id="logo-wrap" style="display:none">
+      <img id="resto-logo" class="resto-logo" src="" alt="Logo">
+    </div>
+    <h1 class="resto-name" id="resto-name">Loading…</h1>
+    <p class="resto-tagline">Browse & order directly from your table</p>
+  </header>
+
+  <!-- Category filter pills -->
+  <div class="category-bar" id="category-bar"></div>
+
+  <!-- Menu items -->
+  <div class="menu-list" id="menu-list">
+    <div class="loading-msg">Loading menu…</div>
+  </div>
+
+  <!-- Sticky order bar -->
+  <div class="order-bar" id="order-bar" style="display:none">
+    <div class="order-bar-info">
+      <span id="ob-count">0 items</span>
+      <span id="ob-total">₹0</span>
+    </div>
+    <button class="btn-place" onclick="openOrderModal()">Place Order →</button>
+  </div>
+
+  <!-- Order Modal -->
+  <div class="modal-overlay" id="order-modal" style="display:none">
+    <div class="modal-sheet">
+      <div class="modal-drag"></div>
+      <h3 class="modal-title">Confirm Order</h3>
+      <div id="order-summary"></div>
+      <div class="total-row">
+        <span>Total</span>
+        <strong id="modal-total">₹0</strong>
+      </div>
+      <div class="form-group">
+        <label>Your Name *</label>
+        <input type="text" id="cust-name" placeholder="e.g. Priya" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Table Number</label>
+        <input type="text" id="table-num" placeholder="Optional">
+      </div>
+      <div id="order-error" class="error-box" style="display:none"></div>
+      <button class="btn-confirm" id="confirm-btn" onclick="submitOrder()">Confirm Order 🚀</button>
+      <button class="btn-back" onclick="closeOrderModal()">← Back to Menu</button>
+    </div>
+  </div>
+
+  <!-- Success Screen -->
+  <div class="success-screen" id="success-screen" style="display:none">
+    <div class="success-icon">🎉</div>
+    <h2>Order Placed!</h2>
+    <p>Your order has been sent to the kitchen.<br>We'll serve you shortly!</p>
+    <button class="btn-back" onclick="resetMenu()">Order More</button>
+  </div>
+
+  <script>
+    const RID = "{{ restaurant_id }}";
+    const params = new URLSearchParams(location.search);
+    const TABLE = params.get('table') || '';
+    let allItems = [];
+    let selected = new Set();
+    let activeCategory = 'All';
+
+    async function loadMenu() {
+      const res = await fetch(`/api/menu/${RID}`);
+      if(!res.ok) { document.getElementById('menu-list').innerHTML = '<div class="loading-msg" style="color:#ff5064">Restaurant not found.</div>'; return; }
+      const data = await res.json();
+      allItems = data.items;
+
+      // Header
+      document.getElementById('resto-name').textContent = data.restaurant.name;
+      document.title = data.restaurant.name + ' – Menu';
+      if(data.restaurant.logo_url) {
+        document.getElementById('resto-logo').src = data.restaurant.logo_url;
+        document.getElementById('logo-wrap').style.display = 'block';
+      }
+
+      // Table
+      if(TABLE) {
+        document.getElementById('table-num').value = TABLE;
+        document.getElementById('table-num').readOnly = true;
+      }
+
+      buildCategories();
+      renderItems(allItems);
+    }
+
+    function buildCategories() {
+      const cats = ['All', ...new Set(allItems.map(i => i.category))];
+      const bar = document.getElementById('category-bar');
+      bar.innerHTML = cats.map(c =>
+        `<button class="cat-pill ${c==='All'?'active':''}" onclick="filterCat('${c}')">${c}</button>`
+      ).join('');
+    }
+
+    function filterCat(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.toggle('active', p.textContent===cat));
+      const filtered = cat === 'All' ? allItems : allItems.filter(i => i.category === cat);
+      renderItems(filtered);
+    }
+
+    function renderItems(items) {
+      const list = document.getElementById('menu-list');
+      if(!items.length) { list.innerHTML = '<div class="loading-msg">No items in this category.</div>'; return; }
+      list.innerHTML = items.map(item => `
+        <div class="menu-item ${selected.has(item.id)?'selected':''}" id="mi-${item.id}" onclick="toggle(${item.id})">
+          <div class="item-img-wrap">
+            ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" class="item-img">` : `<div class="item-img-placeholder">🍽️</div>`}
+          </div>
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+            <div class="item-cat">${item.category}</div>
+            <div class="item-price">₹${item.price.toFixed(2)}</div>
+          </div>
+          <div class="item-check ${selected.has(item.id)?'checked':''}" id="chk-${item.id}">
+            ${selected.has(item.id)?'✓':''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggle(id) {
+      if(selected.has(id)) selected.delete(id); else selected.add(id);
+      const el = document.getElementById(`mi-${id}`);
+      const chk = document.getElementById(`chk-${id}`);
+      el.classList.toggle('selected', selected.has(id));
+      chk.classList.toggle('checked', selected.has(id));
+      chk.textContent = selected.has(id) ? '✓' : '';
+      updateBar();
+    }
+
+    function updateBar() {
+      const bar = document.getElementById('order-bar');
+      if(selected.size === 0) { bar.style.display='none'; return; }
+      const selItems = allItems.filter(i => selected.has(i.id));
+      const total = selItems.reduce((s,i) => s+i.price, 0);
+      document.getElementById('ob-count').textContent = `${selected.size} item${selected.size>1?'s':''}`;
+      document.getElementById('ob-total').textContent = `₹${total.toFixed(2)}`;
+      bar.style.display = 'flex';
+    }
+
+    function openOrderModal() {
+      const selItems = allItems.filter(i => selected.has(i.id));
+      const total = selItems.reduce((s,i) => s+i.price, 0);
+      document.getElementById('order-summary').innerHTML = selItems.map(i =>
+        `<div class="summary-row"><span>${i.name}</span><span>₹${i.price.toFixed(2)}</span></div>`
+      ).join('');
+      document.getElementById('modal-total').textContent = '₹' + total.toFixed(2);
+      document.getElementById('order-modal').style.display = 'flex';
+    }
+
+    function closeOrderModal() {
+      document.getElementById('order-modal').style.display = 'none';
+    }
+
+    async function submitOrder() {
+      const name = document.getElementById('cust-name').value.trim();
+      const err  = document.getElementById('order-error');
+      err.style.display = 'none';
+      if(!name) { err.textContent='Please enter your name'; err.style.display='block'; return; }
+      const btn = document.getElementById('confirm-btn');
+      btn.textContent = 'Placing…'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/orders', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            restaurant_id: RID,
+            customer_name: name,
+            table_number: document.getElementById('table-num').value || '',
+            items: [...selected],
+          })
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.detail || 'Order failed');
+        document.getElementById('order-modal').style.display='none';
+        document.getElementById('success-screen').style.display='flex';
+        selected.clear(); updateBar();
+      } catch(e) {
+        err.textContent=e.message; err.style.display='block';
+        btn.textContent='Confirm Order 🚀'; btn.disabled=false;
+      }
+    }
+
+    function resetMenu() {
+      document.getElementById('success-screen').style.display='none';
+      renderItems(activeCategory==='All' ? allItems : allItems.filter(i=>i.category===activeCategory));
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – QuickDine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+  <div class="auth-bg">
+    <div class="auth-card">
+      <a href="/" class="nav-brand" style="margin-bottom:2rem;display:block">Quick<span style="color:#ffaa32">Dine</span></a>
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-sub">Sign in to your dashboard</p>
+      <div id="error-msg" class="error-box" style="display:none"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@restaurant.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary btn-block" id="login-btn" onclick="doLogin()">Sign In</button>
+      <p class="auth-footer">No account? <a href="/register">Register your restaurant →</a></p>
+    </div>
+  </div>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    async function doLogin() {
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Signing in…'; btn.disabled = true;
+      const err = document.getElementById('error-msg');
+      err.style.display = 'none';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({email: v('email'), password: v('password')})
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Login failed');
+        localStorage.setItem('qd_token', data.token);
+        localStorage.setItem('qd_rid', data.restaurant_id);
+        localStorage.setItem('qd_name', data.restaurant_name);
+        window.location.href = '/dashboard';
+      } catch(e) {
+        err.textContent = e.message; err.style.display = 'block';
+        btn.textContent = 'Sign In'; btn.disabled = false;
+      }
+    }
+    document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  </script>
+</body>
+</html>
