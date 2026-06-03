@@ -16,10 +16,11 @@ bearer  = HTTPBearer(auto_error=False)
 
 
 def hash_password(pw):
+    pw = str(pw)
     return pwd_ctx.hash(pw[:72])
 
-
 def verify_password(pw, hashed):
+    pw = str(pw)
     return pwd_ctx.verify(pw[:72], hashed)
 
 def create_token(data: dict) -> str:
