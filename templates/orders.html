@@ -17,9 +17,19 @@
       <div>
         <h1 class="page-title">Live Orders</h1>
         <p class="page-sub">Real-time kitchen feed • <span id="ws-status" class="ws-dot">Connecting…</span></p>
-      </div>
-      <button class="btn btn-ghost" onclick="loadOrders()">↺ Refresh</button>
-    </div>
+     <div style="display:flex;gap:10px">
+
+  <button class="btn btn-ghost"
+          onclick="loadOrders()">
+      ↺ Refresh
+  </button>
+
+  <button class="btn btn-primary"
+          onclick="window.open('/api/revenue/report')">
+      📊 Revenue PDF
+  </button>
+
+</div>
 
     <div class="orders-columns">
       <div class="order-col" id="col-Pending">

@@ -78,8 +78,19 @@ function cardHTML(order) {
     <div class="order-customer">${order.customer_name}</div>
     <div class="order-items">${items}</div>
     <div class="order-total">₹${order.total_amount.toFixed(2)}</div>
-    <div class="order-time">🕐 ${time}</div>
-    <div class="order-status-btns">${statusButtons(order.id, order.status)}</div>
+   <div class="order-time">🕐 ${time}</div>
+
+<div style="margin-top:10px">
+  <button
+    onclick="downloadReceipt(${order.id})"
+    style="padding:8px 12px;border:none;border-radius:8px;cursor:pointer">
+    🧾 Receipt PDF
+  </button>
+</div>
+
+<div class="order-status-btns">
+  ${statusButtons(order.id, order.status)}
+</div>
   `;
 }
 
@@ -114,4 +125,7 @@ function playNotif() {
     gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .3);
     osc.start(); osc.stop(ctx.currentTime + .3);
   } catch(e) {}
+}
+function downloadReceipt(orderId) {
+    window.open(`/api/orders/${orderId}/receipt`);
 }

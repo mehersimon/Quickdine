@@ -9,6 +9,10 @@ from typing import List, Optional
 from models import get_db, Restaurant, MenuItem, Order
 from auth import hash_password, verify_password, create_token, get_current_manager, gen_restaurant_id
 from ws_manager import manager
+from io import BytesIO
+from fastapi.responses import StreamingResponse
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 router = APIRouter()
 
@@ -311,6 +315,143 @@ async def update_status(
     await manager.broadcast(current.id, {"type": "status_update", "order_id": order_id, "status": new_status})
     return {"ok": True}
 
+# =========================================
+# PDF RECEIPT API
+# =========================================
+@router.get("/api/orders/{order_id}/receipt")
+def download_receipt(order_id: int, db: Session = Depends(get_db)):
+
+    order = db.query(Order).filter(Order.id == order_id).first()
+
+    if not order:
+        raise HTTPException(404, "Order not found")
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+    content = []
+
+    content.append(Paragraph("QuickDine Receipt", styles["Title"]))
+    content.append(Spacer(1, 10))
+
+    content.append(
+        Paragraph(
+            f"Customer: {order.customer_name}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Order ID: {order.id}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Table: {order.table_number}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(Spacer(1, 10))
+
+    for item in order.ordered_items:
+        content.append(
+            Paragraph(
+                f"{item['name']} - ₹{item['price']}",
+                styles["Normal"]
+            )
+        )
+
+    content.append(Spacer(1, 10))
+
+    content.append(
+        Paragraph(
+            f"Total: ₹{order.total_amount}",
+            styles["Heading2"]
+        )
+    )
+
+    doc.build(content)
+
+    buffer.seek(0)
+
+    filename = f"{order.customer_name}_{order.id}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            f'attachment; filename="{filename}"'
+        }
+    )
+@router.get("/api/revenue/report")
+def revenue_report(
+    current: Restaurant = Depends(get_current_manager),
+    db: Session = Depends(get_db)
+):
+
+    orders = db.query(Order).filter(
+        Order.restaurant_id == current.id
+    ).all()
+
+    total_revenue = sum(o.total_amount for o in orders)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+    content = []
+
+    content.append(
+        Paragraph(
+            f"{current.restaurant_name} Revenue Report",
+            styles["Title"]
+        )
+    )
+
+    content.append(Spacer(1, 15))
+
+    content.append(
+        Paragraph(
+            f"Total Orders: {len(orders)}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Total Revenue: ₹{total_revenue}",
+            styles["Heading2"]
+        )
+    )
+
+    content.append(Spacer(1, 15))
+
+    for o in orders:
+        content.append(
+            Paragraph(
+                f"Order #{o.id} | {o.customer_name} | ₹{o.total_amount}",
+                styles["Normal"]
+            )
+        )
+
+    doc.build(content)
+
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            'attachment; filename="Revenue_Report.pdf"'
+        }
+    )
 # ─────────────────────────────────────────
 # QR CODE
 # ─────────────────────────────────────────
